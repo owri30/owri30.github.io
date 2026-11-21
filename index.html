@@ -251,6 +251,19 @@
           0 9px 18px rgba(0,0,0,.16);
       }
       .canvas-frame img { width: 100%; height: auto; display: block; aspect-ratio: 3 / 4; object-fit: cover; object-position: 68% 50%; }
+      /* ============ 読み込み順対策：絵は「文字の壁」が描けるまで見せない ============
+         絵（img）は本文の前方にあるのに、壁を描くスクリプトは
+         大きなHTMLの末尾にある。電波が悪いと、ブラウザが末尾まで
+         読み込む前に絵だけ先に表示され、そのあと壁が描かれて
+         真っ黒になる「先行表示」が起きていた。
+         そこで絵は CSS（head内なので本文より先に効く）で最初から
+         隠しておき、壁の描画が完了した合図（body.ink-ready、
+         JS が paintInk の成功時に付ける）で初めて表示する。
+         表示された時点で絵は壁に完全に覆われているので見た目は
+         変わらず、タップで壁が飛び去ればそのまま絵が現れる。
+         JS が無効な環境では noscript 側の上書きで絵を表示する */
+      #canvasArt { opacity: 0; }
+      body.ink-ready #canvasArt { opacity: 1; }
       /* ============ キャンバスを覆う「文字の壁」 ============
          初期状態ではキャンバスの絵は見せない。絵の面いっぱいに
          小さな文字を重なり合うほど密に詰めた層（.canvas-ink）を
@@ -614,6 +627,9 @@
         }
       }
     </style>
+    <!-- JS無効時は「文字の壁」が描けず絵が隠れたままになるため、
+         絵の隠し（#canvasArt の opacity:0）を打ち消して表示する -->
+    <noscript><style>#canvasArt { opacity: 1; }</style></noscript>
   </head>
   <body>
     <header class="site-head">
@@ -1843,6 +1859,8 @@
               canvasInk.textContent = inkText.slice(0, 3200);
             }
             inkReady = false;
+            /* 代替の文字層でも面は覆えているので、絵の表示は許可する */
+            document.body.classList.add("ink-ready");
             return;
           }
           inkW = rect.width; inkH = rect.height;
@@ -1926,6 +1944,9 @@
           inkCanvas = next;
           inkReady = true;
           canvasInk.setAttribute("data-painted", "1");
+          /* 壁が描けた合図：ここで初めて下の絵を表示してよい
+             （絵は壁に覆われて見えないが、先行表示は起きない） */
+          document.body.classList.add("ink-ready");
         }
         /* その場所の墨だけを消す：飛び出した文字が出た場所に、
            ふちの柔らかい円形の穴を開け、下の絵をその分だけ見せる。
@@ -2524,6 +2545,9 @@
           if (revealed) return;
           revealed = true;
           document.body.classList.add("is-revealed");
+          /* 保険：万一壁の描画が一度も成功していなくても、
+             タップされた時点で絵は表示する（隠れたままにはしない） */
+          document.body.classList.add("ink-ready");
           canvasBtn.setAttribute("aria-label", "デジタルキャンバス（タップで文字が溢れます）");
         }
 
