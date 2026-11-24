@@ -382,9 +382,17 @@
       .leg.back::before { width: 20px; height: 7px; opacity: .7; }
       .canvas-caption {
         margin: clamp(16px, 3vh, 26px) 0 0; text-align: center;
-        font-size: 14px; line-height: 1.9; max-width: 640px; color: #000;
+        font-size: 14px; line-height: 1.9; color: #000;
+        /* 左右の見切れ対策：幅は親（easel-zone）の幅を上限にし、
+           左右に内側余白を確保して、文字が画面の端まで届かないようにする。
+           以前は幅の上限が 640px だけで内側余白がなく、折り返せない
+           文節（.nb）が画面幅を超えると、中央寄せのまま両端が
+           画面外へはみ出して見切れていた（文節の分割は HTML 側） */
+        width: 100%; max-width: min(640px, 100%);
+        padding-inline: clamp(14px, 4vw, 24px);
+        overflow-wrap: break-word;
       }
-      .canvas-caption .cap-date { font-family: var(--serif); font-weight: 800; font-size: 15.5px; letter-spacing: .04em; }
+      .canvas-caption .cap-date { font-family: var(--serif); font-weight: 800; font-size: clamp(14px, 3.9vw, 15.5px); letter-spacing: .04em; }
       .next-line {
         appearance: none; background: none; border: none; cursor: pointer;
         margin-top: clamp(16px, 3vh, 28px); padding: 10px 14px; min-height: 44px;
@@ -673,8 +681,8 @@
           </div>
         </div>
         <p class="canvas-caption chrome">
-          <span class="cap-date"><span class="nb">2026.11.25 ― 初日。</span><span class="nb">『あれを見ろ！』於・シアター711、19:30開演。</span><span class="nb">笑って、騒いで、ちょっぴり不思議な一夜の宴が始まる。</span></span><br />
-          <span class="nb">デジタルキャンバス：</span><span class="nb">その時々の環境と心境を描く場所。</span><span class="nb">日常のやり取りから、</span><span class="nb">AIが自動的に依乃王里の心境を描いています。</span>
+          <span class="cap-date"><span class="nb">2026.11.25 ― 初日。</span><span class="nb">『あれを見ろ！』</span><span class="nb">於・シアター711、</span><span class="nb">19:30開演。</span><span class="nb">笑って、騒いで、</span><span class="nb">ちょっぴり不思議な</span><span class="nb">一夜の宴が始まる。</span></span><br />
+          <span class="nb">デジタルキャンバス：</span><span class="nb">その時々の環境と心境を描く場所。</span><span class="nb">日常のやり取りから、</span><span class="nb">AIが自動的に</span><span class="nb">依乃王里の心境を描いています。</span>
         </p>
         <button class="next-line chrome" id="nextShow" type="button" hidden>
           <span id="nextShowLabel">次の公演</span><span class="count" id="nextShowCount"></span><wbr /><span id="nextShowTitle"></span>
